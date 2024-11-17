@@ -40,7 +40,7 @@ class UAVControl:
         try:
             self.master.arducopter_arm()
             self.master.motors_armed_wait()
-            logger.info("БПЛА взведён")
+            logger.info("БПЛА активирован")
         except Exception as e:
             logger.error("Ошибка активации БПЛА: %s", e)
             raise
@@ -78,7 +78,7 @@ class UAVControl:
                 current_lat = msg.lat / 1e7
                 current_lon = msg.lon / 1e7
             else:
-                raise IOError(
+                raise RuntimeError(
                     "Не удалось получить текущие координаты для взлёта"
                 )
 
@@ -94,8 +94,8 @@ class UAVControl:
             )
 
             if not self.wait_command_ack(mavutil.mavlink.MAV_CMD_NAV_TAKEOFF):
-                raise IOError("Команда взлёта не подтверждена")
-            logger.info("Взлёт на высоту %f метров", altitude)
+                raise RuntimeError("Команда взлёта не подтверждена")
+            logger.info("Взлёт на высоту %s метров", altitude)
         except Exception as e:
             logger.error("Ошибка взлёта: %s", e)
             raise
@@ -181,11 +181,9 @@ class UAVControl:
                                              timeout=1)
             if ack_msg and ack_msg.command == command:
                 if ack_msg.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-                    logger.info("Команда %i подтверждена", command)
+                    logger.info("Команда %s подтверждена", command)
                     return True
-                logger.error("Команда %i отклонена с кодом %i",
-                             command,
-                             ack_msg.result)
+                logger.error("Команда %s отклонена с кодом %s", command, ack_msg.result)
                 return False
         logger.error("Не получено подтверждение для команды %s", command)
         return False
@@ -208,7 +206,6 @@ class UAVControl:
                 mavutil.mavlink.MAV_MISSION_TYPE_MISSION
             )
             time.sleep(1)  # Задержка для обработки
-
             self.master.mav.mission_item_send(
                 self.master.target_system,
                 self.master.target_component,
@@ -217,16 +214,15 @@ class UAVControl:
                 # Исправленный фрейм:
                 mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
                 mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                0,  # current
-                1,  # autocontinue
+                0,  # current (0 - не текущая точка)
+                1,  # autocontinue (1 - продолжать автоматически)
                 0, 0, 0, 0,
                 lat, lon, alt
             )
-
             if not self.wait_command_ack(mavutil.mavlink.MAV_CMD_NAV_WAYPOINT):
-                raise IOError("Команда полёта к точке не подтверждена")
+                raise RuntimeError("Команда полёта к точке не подтверждена")
 
-            logger.info("Летим к точке (%f, %f, %f)", lat, lon, alt)
+            logger.info("Летим к точке (%s, %s, %s)", lat, lon, alt)
         except Exception as e:
             logger.error("Ошибка при полёте к точке: %s", e)
             raise
