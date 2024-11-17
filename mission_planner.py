@@ -1,7 +1,11 @@
-from uav_control import UAVControl
+"""
+Класс для планирования и выполнения миссий БПЛА.
+"""
 import time
 from typing import List, Tuple
 import logging
+from uav_control import UAVControl
+
 
 logger = logging.getLogger(__name__)
 
@@ -20,12 +24,14 @@ class MissionPlanner:
         """
         self.uav = UAVControl(connection_string)
 
-    def execute_mission(self, waypoints: List[Tuple[float, float, float]]) -> None:
+    def execute_mission(self,
+                        waypoints: List[Tuple[float, float, float]]) -> None:
         """
         Выполнение миссии по заданным точкам.
 
         Args:
-            waypoints (List[Tuple[float, float, float]]): Список точек (lat, lon, alt).
+            waypoints (List[Tuple[float, float, float]]):
+            Список точек (lat, lon, alt).
         """
         try:
             self.uav.arm()
@@ -36,7 +42,7 @@ class MissionPlanner:
             time.sleep(5)
 
             for idx, waypoint in enumerate(waypoints):
-                logger.info(f"Переходим к точке {idx+1}: {waypoint}")
+                logger.info("Переходим к точке %i: %s", idx+1, waypoint)
                 self.uav.goto(*waypoint)
 
                 # Ожидание достижения точки с проверкой телеметрии
@@ -47,14 +53,16 @@ class MissionPlanner:
                         lat_diff = abs(telemetry.get('lat', 0.0) - waypoint[0])
                         lon_diff = abs(telemetry.get('lon', 0.0) - waypoint[1])
                         alt_diff = abs(telemetry.get('alt', 0.0) - waypoint[2])
-                        if lat_diff < 0.0001 and lon_diff < 0.0001 and alt_diff < 1.0:
+                        if lat_diff < 0.0001 \
+                                and lon_diff < 0.0001 \
+                                and alt_diff < 1.0:
                             reached = True
-                            logger.info(f"Достигнута точка {idx+1}")
+                            logger.info("Достигнута точка %i", idx+1)
                             break
                     time.sleep(1)
                 if not reached:
-                    logger.error(f"Не удалось достичь точки {idx+1}")
-                    raise Exception(f"Не удалось достичь точки {idx+1}")
+                    logger.error("Не удалось достичь точки %i", idx+1)
+                    raise IOError(f"Не удалось достичь точки {idx+1}")
 
             # Возвращение и посадка
             self.uav.set_mode('RTL')
@@ -64,6 +72,11 @@ class MissionPlanner:
             time.sleep(5)
             self.uav.disarm()
         except Exception as e:
-            logger.error(f"Ошибка во время выполнения миссии: {e}")
+            logger.error("Ошибка во время выполнения миссии: %s", e)
             self.uav.disarm()
             raise
+
+    def abort_mission(self):
+        """
+        Отмена миссии по заданным точкам. Заглушка.
+        """
