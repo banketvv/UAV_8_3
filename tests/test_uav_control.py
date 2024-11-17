@@ -51,6 +51,7 @@ class TestUAVControl(unittest.TestCase):
         # Проверка взлёта на положительную высоту
         # Настройка возврата координат
         position_msg = MagicMock()
+        self.uav.wait_command_ack = MagicMock(return_value=True)
         position_msg.get_type.return_value = 'GLOBAL_POSITION_INT'
         position_msg.lat = 550000000  # 55.0 градусов
         position_msg.lon = 370000000  # 37.0 градусов
@@ -69,6 +70,7 @@ class TestUAVControl(unittest.TestCase):
 
     def test_goto(self):
         # Проверка команды полёта к заданной точке
+        self.uav.wait_command_ack = MagicMock(return_value=True)
         self.uav.goto(55.0, 37.0, 100.0)
 
         self.mock_master.mav.mission_count_send.assert_called_once()
