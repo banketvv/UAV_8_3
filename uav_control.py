@@ -1,7 +1,7 @@
 from pymavlink import mavutil
 import time
 import math
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -31,26 +31,26 @@ class UAVControl:
 
     def arm(self) -> None:
         """
-        Взведение (Arm) БПЛА для начала работы двигателей.
+        Активация (Arm) БПЛА для начала работы двигателей.
         """
         try:
             self.master.arducopter_arm()
             self.master.motors_armed_wait()
             logger.info("БПЛА взведён")
         except Exception as e:
-            logger.error(f"Ошибка взведения БПЛА: {e}")
+            logger.error(f"Ошибка активации БПЛА: {e}")
             raise
 
     def disarm(self) -> None:
         """
-        Разоружение (Disarm) БПЛА для остановки двигателей.
+        Дезактивация (Disarm) БПЛА для остановки двигателей.
         """
         try:
             self.master.arducopter_disarm()
             self.master.motors_disarmed_wait()
-            logger.info("БПЛА разоружён")
+            logger.info("БПЛА деактивирован")
         except Exception as e:
-            logger.error(f"Ошибка разоружения БПЛА: {e}")
+            logger.error(f"Ошибка деактивации БПЛА: {e}")
             raise
 
     def takeoff(self, altitude: float) -> None:
