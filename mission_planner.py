@@ -42,7 +42,7 @@ class MissionPlanner:
             time.sleep(5)
 
             for idx, waypoint in enumerate(waypoints):
-                logger.info("Переходим к точке %i: %s", idx+1, waypoint)
+                logger.info("Переходим к точке %s: %s", idx+1, waypoint)
                 self.uav.goto(*waypoint)
 
                 # Ожидание достижения точки с проверкой телеметрии
@@ -57,11 +57,11 @@ class MissionPlanner:
                                 and lon_diff < 0.0001 \
                                 and alt_diff < 1.0:
                             reached = True
-                            logger.info("Достигнута точка %i", idx+1)
+                            logger.info("Достигнута точка %s", idx+1)
                             break
                     time.sleep(1)
                 if not reached:
-                    logger.error("Не удалось достичь точки %i", idx+1)
+                    logger.error("Не удалось достичь точки %s", idx+1)
                     raise IOError(f"Не удалось достичь точки {idx+1}")
 
             # Возвращение и посадка
